@@ -86,7 +86,6 @@ func (r *MemoryExpire) isValid(key string) bool {
 	if r.expire == zeroTTL {
 		return true
 	}
-	b := time.Now().Before(setAt)
-	fmt.Println(b)
-	return b
+	return time.Now().Before(setAt)
+
 }

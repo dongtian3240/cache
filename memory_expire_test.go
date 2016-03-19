@@ -1,7 +1,6 @@
 package cache
 
 import (
-	"fmt"
 	"testing"
 	"time"
 )
@@ -17,6 +16,6 @@ func TestExpire(t *testing.T) {
 		t.Fatal("data found")
 	}
 
-	fmt.Println("value = ", v)
+	t.Log("v = ", v)
 
 }
