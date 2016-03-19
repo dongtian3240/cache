@@ -8,24 +8,24 @@ import (
 
 var zeroTTL = time.Duration(0)
 
-type MemoryTTL struct {
+type MemoryExpire struct {
 	sync.Mutex
 	cache      *MemoryNoTS
 	setAts     map[string]time.Time
-	ttl        time.Duration
+	expire     time.Duration
 	gcInterval time.Duration
 }
 
-func NewMemoryWithTTL(ttl time.Duration) *MemoryTTL {
+func NewMemoryWithExpire(expire time.Duration) *MemoryExpire {
 
-	return &MemoryTTL{
+	return &MemoryExpire{
 		cache:  NewMemoryNoTS(),
 		setAts: map[string]time.Time{},
-		ttl:    ttl,
+		expire: expire,
 	}
 }
 
-func (r *MemoryTTL) StartGC(gcInterval time.Duration) {
+func (r *MemoryExpire) StartGC(gcInterval time.Duration) {
 	r.gcInterval = gcInterval
 	go func() {
 		for _ = range time.Tick(r.gcInterval) {
@@ -40,14 +40,14 @@ func (r *MemoryTTL) StartGC(gcInterval time.Duration) {
 	}()
 }
 
-func (r *MemoryTTL) Delete(key string) error {
+func (r *MemoryExpire) Delete(key string) error {
 	r.Lock()
 	defer r.Unlock()
 	r.delete(key)
 	return nil
 }
 
-func (r *MemoryTTL) Get(key string) (interface{}, error) {
+func (r *MemoryExpire) Get(key string) (interface{}, error) {
 
 	r.Lock()
 	defer r.Unlock()
@@ -63,29 +63,30 @@ func (r *MemoryTTL) Get(key string) (interface{}, error) {
 	return value, nil
 }
 
-func (r *MemoryTTL) Set(key string, value interface{}) error {
+func (r *MemoryExpire) Set(key string, value interface{}) error {
 
 	r.Lock()
 	defer r.Unlock()
 	r.cache.Set(key, value)
-	r.setAts[key] = time.Now()
+	r.setAts[key] = time.Now().Add(r.expire)
 	return nil
 }
 
-func (r *MemoryTTL) delete(key string) {
+func (r *MemoryExpire) delete(key string) {
 	r.cache.Delete(key)
 	delete(r.setAts, key)
 }
-func (r *MemoryTTL) isValid(key string) bool {
+func (r *MemoryExpire) isValid(key string) bool {
 
 	setAt, ok := r.setAts[key]
 	if !ok {
 		return false
 	}
 
-	if r.ttl == zeroTTL {
+	if r.expire == zeroTTL {
 		return true
 	}
-
-	return setAt.Add(r.ttl).After(time.Now())
+	b := time.Now().Before(setAt)
+	fmt.Println(b)
+	return b
 }
