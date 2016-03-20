@@ -6,7 +6,7 @@ import (
 
 type LRUNoTS struct {
 	cache Cache
-	list  list.List
+	list  *list.List
 	size  int
 }
 
@@ -20,6 +20,12 @@ func NewLURNoTS(size int) *LRUNoTS {
 
 	if size < 1 {
 		panic("invid cache size ")
+	}
+
+	return &LRUNoTS{
+		cache: NewMemoryNoTS(),
+		size:  size,
+		list:  list.New(),
 	}
 
 }
