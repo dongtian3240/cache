@@ -9,18 +9,22 @@ type Memory struct {
 	cache Cache
 }
 
+//
 func NewMemory() Cache {
 
 	return &Memory{
 		cache: NewMemoryNoTS(),
 	}
 }
+
+//
 func (r *Memory) Get(key string) (interface{}, error) {
 	r.Lock()
 	defer r.Unlock()
 	return r.cache.Get(key)
 }
 
+//
 func (r *Memory) Set(key string, value interface{}) error {
 
 	r.Lock()
